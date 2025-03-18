@@ -11,7 +11,7 @@ case "$1" in
         git pull origin master
         git add .
         git commit -m "Sync from $(hostname) at $(date)" || echo "Nothing to commit."
-        git push origin maaster
+        git push origin master
         echo "Sync complete."
         ;;
     *)
