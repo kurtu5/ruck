@@ -1,28 +1,42 @@
 #!/bin/bash
-# Setup script for Ruck: clones repo, sets up symlinks, and adds ~/bin/ to PATH
+# Setup script for Ruck: moves repo to ~/.ruck/, sets up symlink, and runs initial sync
 
-# Check if ~/.ruck exists
-if [ ! -d "$HOME/.ruck" ]; then
-    echo "Cloning Ruck repo to ~/.ruck/"
-    git clone https://github.com/kurtu5/ruck.git "$HOME/.ruck"
-else
-    echo "Updating existing Ruck repo..."
-    cd "$HOME/.ruck"
-    git pull origin main
-fi
+# Get the script's directory (not the caller's pwd)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Ensure ~/bin/ exists
 mkdir -p "$HOME/bin"
 
+# Move this repo to ~/.ruck/
+if [ ! -d "$HOME/.ruck" ]; then
+    echo "Moving Ruck repo to ~/.ruck/"
+    mv "$SCRIPT_DIR" "$HOME/.ruck"
+else
+    echo "Updating existing Ruck repo at ~/.ruck/"
+    mv "$SCRIPT_DIR"/* "$HOME/.ruck/"
+    rm -rf "$SCRIPT_DIR"  # Clean up temp dir after moving
+fi
+
 # Symlink ruck.sh to ~/bin/ruck
 ln -sf "$HOME/.ruck/src/ruck.sh" "$HOME/bin/ruck"
 
-# Add ~/bin/ to PATH if not already there
-if ! echo "$PATH" | grep -q "$HOME/bin"; then
-    echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
-    echo "Added ~/bin/ to PATH in .bashrc. Run 'source ~/.bashrc' to apply."
+# Ensure ~/.ruck/dotfiles/minimal/ exists and create .bashrc_ruck
+mkdir -p "$HOME/.ruck/dotfiles/minimal"
+cat > "$HOME/.ruck/dotfiles/minimal/.bashrc_ruck" << 'EOF'
+#!/bin/bash
+export PATH="$HOME/bin:$PATH"
+EOF
+
+# Add sourcing to ~/.bashrc if not already there
+if ! grep -q "source.*\.bashrc_ruck" "$HOME/.bashrc"; then
+    echo "source ~/.ruck/dotfiles/minimal/.bashrc_ruck" >> "$HOME/.bashrc"
+    echo "Added sourcing of .bashrc_ruck to ~/.bashrc. Run 'source ~/.bashrc' to apply."
 else
-    echo "~/bin/ already in PATH."
+    echo ".bashrc_ruck already sourced in ~/.bashrc."
 fi
+
+# Run initial sync
+echo "Running initial core sync..."
+"$HOME/bin/ruck" core sync
 
 echo "Ruck setup done! Run 'ruck' to test it."
