@@ -35,8 +35,16 @@ else
     echo ".bashrc_ruck already sourced in ~/.bashrc."
 fi
 
+# Set default configuration
+echo "minimal" > "$HOME/.ruck/current_config"
+
+# Ensure .gitignore exists and ignores current_config
+if [ ! -f "$HOME/.ruck/.gitignore" ] || ! grep -q "current_config" "$HOME/.ruck/.gitignore"; then
+    echo "current_config" >> "$HOME/.ruck/.gitignore"
+fi
+
 # Run initial sync
-echo "Running initial core sync..."
-"$HOME/bin/ruck" core sync
+echo "Running initial sack sync..."
+"$HOME/bin/ruck" sack sync
 
 echo "Ruck setup done! Run 'ruck' to test it."
