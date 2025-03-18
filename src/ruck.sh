@@ -8,10 +8,10 @@ echo "$(date): $@" >> "$HOME/.ruck/history.log"
 
 case "$1" in
     sync)
-        git pull origin main
+        git pull origin master
         git add .
         git commit -m "Sync from $(hostname) at $(date)" || echo "Nothing to commit."
-        git push origin main
+        git push origin maaster
         echo "Sync complete."
         ;;
     *)
