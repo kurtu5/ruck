@@ -4,18 +4,22 @@
 # Get the script's directory (not the caller's pwd)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Ensure ~/bin/ exists
-mkdir -p "$HOME/bin"
-
-# Move this repo to ~/.ruck/
+# Ensure ~/.ruck/ exists and move contents
 if [ ! -d "$HOME/.ruck" ]; then
-    echo "Moving Ruck repo to ~/.ruck/"
-    mv "$SCRIPT_DIR" "$HOME/.ruck"
+    echo "Creating ~/.ruck/ and moving repo contents..."
+    mkdir -p "$HOME/.ruck"
+    mv "$SCRIPT_DIR"/* "$HOME/.ruck/"
+    mv "$SCRIPT_DIR"/.* "$HOME/.ruck/" 2>/dev/null || true  # Move hidden files, ignore errors
+    rmdir "$SCRIPT_DIR"  # Clean up empty dir
 else
     echo "Updating existing Ruck repo at ~/.ruck/"
     mv "$SCRIPT_DIR"/* "$HOME/.ruck/"
-    rm -rf "$SCRIPT_DIR"  # Clean up temp dir after moving
+    mv "$SCRIPT_DIR"/.* "$HOME/.ruck/" 2>/dev/null || true
+    rmdir "$SCRIPT_DIR"
 fi
+
+# Ensure ~/bin/ exists
+mkdir -p "$HOME/bin"
 
 # Symlink ruck.sh to ~/bin/ruck
 ln -sf "$HOME/.ruck/src/ruck.sh" "$HOME/bin/ruck"
